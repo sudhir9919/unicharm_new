@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-
+import { useTheme } from '../../Context/ThemeContext';
 const InventoryScreen = () => {
+  const {isDark} = useTheme();
+  const { backgroundColor, textColor,NotificationsCard_bg,text_MyOrder,Forgot_bg } = useTheme(); 
+
   // Sample inventory data
   const [inventoryItems, setInventoryItems] = useState([
     { id: '1', name: 'Item 1', quantity: 10 },
@@ -17,15 +20,15 @@ const InventoryScreen = () => {
 
   // Render each inventory item
   const renderItem = ({ item }) => (
-    <TouchableOpacity style={styles.itemContainer} onPress={() => handleItemPress(item)}>
+    <TouchableOpacity style={[styles.itemContainer,{backgroundColor:backgroundColor}]} onPress={() => handleItemPress(item)}>
       <Text style={styles.itemName}>{item.name}</Text>
-      <Text style={styles.itemQuantity}>Quantity: {item.quantity}</Text>
+      <Text style={[styles.itemQuantity,{color:text_MyOrder}]}>Quantity: {item.quantity}</Text>
     </TouchableOpacity>
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Inventory</Text>
+    <View style={[styles.container,{backgroundColor:Forgot_bg}]}>
+      <Text style={[styles.title,{color:textColor}]}>Inventory</Text>
       <FlatList
         data={inventoryItems}
         renderItem={renderItem}

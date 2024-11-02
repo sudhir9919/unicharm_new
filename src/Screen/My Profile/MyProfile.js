@@ -2,29 +2,25 @@ import React, { useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import InputBox2 from '../../reusable_component/InputBox2';
-
+import { useTheme } from '../../Context/ThemeContext';
 const { width } = Dimensions.get('window');
 
-const MyProfile = () => {
+const MyProfile = ({navigation}) => {
   const [name, setName] = useState('John Doe');
   const [email, setEmail] = useState('john.doe@example.com');
   const [phone, setPhone] = useState('+1 234 567 8901');
   const [editing, setEditing] = useState(false);
-
-  const handleSave = () => {
-    // Handle save action (e.g., update profile)
-    setEditing(false);
-  };
-
+  const { isDarkMode } = useTheme();
+  const { backgroundColor, textColor,NotificationsCard_bg,text_MyOrder, Forgot_bg } = useTheme(); 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container,{backgroundColor:Forgot_bg}]}>
       <View style={styles.header}>
         <TouchableOpacity>
-          <Icon name="arrow-back-outline" size={24} color="#000" />
+          <Icon name="arrow-back-outline" size={24} color="#000" onPress={() => navigation.goBack()}/>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Profile</Text>
+        <Text style={[styles.headerTitle,{color:text_MyOrder}]}>Profile</Text>
         <TouchableOpacity onPress={() => setEditing(!editing)}>
-          <Text style={styles.editText}>{editing ? 'Save' : 'Edit'}</Text>
+          <Text style={[styles.editText,{color:text_MyOrder}]}>{editing ? 'Save' : 'Edit'}</Text>
         </TouchableOpacity>
       </View>
 

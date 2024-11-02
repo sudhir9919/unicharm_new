@@ -1,16 +1,16 @@
 // src/data/data.js
 
 export const distributorsData = [
-  { id: '1', name: 'John',Credit_Limit: '100000'},
-  { id: '2', name: 'David-01',Credit_Limit: '70000' }, // Inactive
-  { id: '3', name: 'Cameron',Credit_Limit: '60000' },
-  { id: '4', name: 'Stark-01',Credit_Limit: '50000' }, // Inactive
-  { id: '5', name: 'Miller',Credit_Limit: '30000' },
-  { id: '6', name: 'Sophia',Credit_Limit: '55000'},
-  { id: '7', name: 'Oliver-01',Credit_Limit: '45000' }, // Inactive
-  { id: '8', name: 'Charlotte',Credit_Limit: '35000'},
-  { id: '9', name: 'Lucas',Credit_Limit: '25000'},
-  { id: '10', name: 'Isabella-01',Credit_Limit: '40000' }, // Inactive
+  { id: '1', name: 'John', Credit_Limit: '100000', distributorCode: 'D001' },
+  { id: '2', name: 'David-01', Credit_Limit: '70000', distributorCode: 'D002' }, // Inactive
+  { id: '3', name: 'Cameron', Credit_Limit: '60000', distributorCode: 'D003' },
+  { id: '4', name: 'Stark-01', Credit_Limit: '50000', distributorCode: 'D004' }, // Inactive
+  { id: '5', name: 'Miller', Credit_Limit: '30000', distributorCode: 'D005' },
+  { id: '6', name: 'Sophia', Credit_Limit: '55000', distributorCode: 'D006' },
+  { id: '7', name: 'Oliver-01', Credit_Limit: '45000', distributorCode: 'D007' }, // Inactive
+  { id: '8', name: 'Charlotte', Credit_Limit: '35000', distributorCode: 'D008' },
+  { id: '9', name: 'Lucas', Credit_Limit: '25000', distributorCode: 'D009' },
+  { id: '10', name: 'Isabella-01', Credit_Limit: '40000', distributorCode: 'D010' }
 ];
 // Function to separate active and inactive distributors
 export const getDistributorsByStatus = () => {

@@ -16,15 +16,20 @@ import Icons1 from 'react-native-vector-icons/Ionicons';
 import UpdatePassword from './src/Screen/UpdatePassword/UpdatePassword';
 import ForgotPassword from './src/Screen/ForgotPassword/ForgotPassword';
 import NotificationScreen from './src/Screen/NotificationScreen/NotificationScreen';
+import SettingsScreen from './src/Screen/SettingScreen/SettingScreen';
 import CustomTabBar from './src/Screen/CustomTabIcon/CustomTabIcon'; // Import CustomTabBar
 import OrderNow from './src/Screen/OrderNow/OrderNow';
 import MyOrder from './src/Screen/My order/MyOrder';
-
+import CompletedScreen from './src/Screen/CompletedOrder/CompletedScreen';
+import { ThemeProvider} from './src/Context/ThemeContext';
+import { useTheme } from './src/Context/ThemeContext';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
 // Bottom Tab Navigation
 const AppTabs = () => {
+  const { isDarkMode } = useTheme();
+  const { backgroundColor, textColor,NotificationsCard_bg,Forgot_bg } = useTheme(); 
   return (
     <Tab.Navigator
       tabBar={props => <CustomTabBar {...props} />} // Use CustomTabBar here
@@ -32,6 +37,10 @@ const AppTabs = () => {
         tabBarActiveTintColor: '#3C459A', // Active tab icon color
         tabBarInactiveTintColor: '#999',   // Inactive tab icon color
         headerShown: false,
+        tabBarStyle: {
+          backgroundColor:NotificationsCard_bg // Set background color based on theme
+          
+        },
       }}
     >
       <Tab.Screen
@@ -81,8 +90,10 @@ const AppStack = () => {
       <Stack.Screen name="UpdatePassword" component={UpdatePassword} />
       <Stack.Screen name="AppTabs" component={AppTabs} />
       <Stack.Screen name="OrderNow" component={OrderNow} />
-      <Stack.Screen name="MyOrder" component={MyOrder} />
+      <Stack.Screen name="CompletedScreen" component={CompletedScreen} />
+      <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
       <Stack.Screen name="NotificationScreen" component={NotificationScreen} />
+      <Stack.Screen name="OrdersScreen" component={OrdersScreen} />
     </Stack.Navigator>
   );
 };
@@ -90,10 +101,12 @@ const AppStack = () => {
 // Main App Component
 const App = () => {
   return (
+    <ThemeProvider>
     <NavigationContainer>
-      <StatusBar barStyle="light-content" backgroundColor="#fff" />
+      <StatusBar barStyle="light-content" backgroundColor={"#fff"} />
       <AppStack />
     </NavigationContainer>
+  </ThemeProvider>
   );
 };
 

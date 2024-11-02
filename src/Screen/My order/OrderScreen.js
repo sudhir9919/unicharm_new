@@ -1,55 +1,73 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
-import MyOrder from './MyOrder'; // Import the MyOrder component
-import Colors from '../../constant/Colors';
-const OrdersScreen = () => {
-  const [orders, setOrders] = useState([]);
+import React, { useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { useTheme } from '../../Context/ThemeContext';
+const OrderScreen = ({ navigation }) => {
+  const { isDarkMode } = useTheme();
+  const Order_bg = isDarkMode ? 'black' : 'white';
+  const textColor = isDarkMode ? 'white' : 'black';
+  // State to track active tab
+  const [activeTab, setActiveTab] = useState('processing');
 
-  // Sample order data
-  const sampleOrders = [
-    {
-      id: 1,
-      image:'https://www.bigbasket.com/media/uploads/p/l/40023127_8-mamypoko-diaper-pants-extra-absorb-xxl.jpg',
-      quantity: 2,
-      name:'mammy-poko-pant',
-      price: 29.99,
-      gst: 2.40, // Example GST amount
-    },
-    {
-      id: 2,
-      name:'Wipes',
-      image: 'https://5.imimg.com/data5/LG/RF/XN/SELLER-3404037/mamypoko-cleaning-wipes-500x500.jpg',
-      quantity: 1,
-      price: 19.99,
-      gst: 1.60,
-    },
-    {
-      id: 3,
-      name:'Life Free',
-      image: 'https://m.media-amazon.com/images/I/81ECqhSrHlL._AC_UF1000,1000_QL80_.jpg',
-      quantity: 5,
-      price: 49.99,
-      gst: 4.00,
-    },
+  // Sample data for the orders
+  const processingOrders = [
+    { id: '1', date: '18/10/2024', name: 'Distributor Name', idInfo: 'Distributor ID', phone: 'xxxxxxxxxx', email: 'xxxxx@yahoo.com' },
+    { id: '2', date: '17/10/2024', name: 'Distributor Name', idInfo: 'Distributor ID', phone: 'xxxxxxxxxx', email: 'xxxxx@yahoo.com' },
+    { id: '3', date: '16/10/2024', name: 'Distributor Name', idInfo: 'Distributor ID', phone: 'xxxxxxxxxx', email: 'xxxxx@yahoo.com' },
   ];
 
-  // Simulating data fetching
-  useEffect(() => {
-    // Replace with API call in the future
-    setOrders(sampleOrders);
-  }, []);
+  const completedOrders = [
+    { id: '4', date: '15/10/2024', name: 'Distributor Name', idInfo: 'Distributor ID', phone: '+9176xxxx47', email: 'torxxto@yahoo.com' },
+    { id: '5', date: '14/10/2024', name: 'Distributor Name', idInfo: 'Distributor ID', phone: '+9178xxxxx91', email: 'raixx@yahoo.com' },
+  ];
 
-  const renderItem = ({ item }) => <MyOrder order={item} />;
+  // Render each order item
+  const renderOrderItem = ({ item }) => (
+    <View style={styles.orderCard}>
+      <Text style={[styles.orderDate,{color:textColor}]}>{item.date}</Text>
+      <View style={styles.orderInfo}>
+        <View style={styles.orderDetails}>
+          <Text style={[styles.orderText,{color:textColor}]}>{item.name} | {item.idInfo}</Text>
+          <Text style={[styles.orderText,{color:textColor}]}>📞 {item.phone}  ✉️ {item.email}</Text>
+        </View>
+        <TouchableOpacity style={styles.editButton}>
+          <Text style={styles.editText}>Edit</Text>
+        </TouchableOpacity>
+      </View>
+      <TouchableOpacity style={styles.viewDetailButton}>
+        <Text style={styles.viewDetailText}>View Detail</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Orders</Text>
+    <View style={[styles.container,{backgroundColor:Order_bg}]}>
+      {/* Header */}
+      <View style={[styles.header,{backgroundColor:Order_bg}]}>
+        <Text style={[styles.headerText,{color:textColor}]}>My Orders</Text>
       </View>
+
+      {/* Tab bar */}
+      <View style={styles.tabBar}>
+        <TouchableOpacity
+          style={activeTab === 'processing' ? styles.tabButtonActive : styles.tabButtonInactive}
+          onPress={() => setActiveTab('processing')}
+        >
+          <Text style={styles.tabButtonText}>Processing</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={activeTab === 'completed' ? styles.tabButtonActive : styles.tabButtonInactive}
+          onPress={() => setActiveTab('completed')}
+        >
+          <Text style={styles.tabButtonText}>Completed</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Order List */}
       <FlatList
-        data={orders}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
+        data={activeTab === 'processing' ? processingOrders : completedOrders}
+        renderItem={renderOrderItem}
+        keyExtractor={item => item.id}
+        style={styles.orderList}
       />
     </View>
   );
@@ -58,20 +76,82 @@ const OrdersScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#f8f8f8',
+    backgroundColor: '#fff',
   },
   header: {
-    padding: 15,
-    
-    borderRadius: 10,
-    marginBottom: 15,
+    padding: 16,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
   },
-  headerTitle: {
-    fontSize: 26,
+  headerText: {
+    fontSize: 18,
     fontWeight: 'bold',
-    color: Colors.Text_color,
+    color: 'black',
+  },
+  tabBar: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  tabButtonActive: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: '#3F51B5',
+    alignItems: 'center',
+  },
+  tabButtonInactive: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: '#55585c',
+    alignItems: 'center',
+  },
+  tabButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  orderList: {
+    flex: 1,
+  },
+  orderCard: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  orderDate: {
+    fontSize: 14,
+    color: '#999',
+  },
+  orderInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  orderDetails: {
+    flex: 1,
+  },
+  orderText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  editButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: '#FFC107',
+    borderRadius: 5,
+  },
+  editText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  viewDetailButton: {
+    marginTop: 8,
+  },
+  viewDetailText: {
+    color: '#3F51B5',
+    fontWeight: 'bold',
   },
 });
 
-export default OrdersScreen;
+export default OrderScreen;

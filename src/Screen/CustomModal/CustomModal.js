@@ -2,8 +2,14 @@ import React from 'react';
 import { View, Text, Modal, TouchableOpacity, TouchableWithoutFeedback, Keyboard, StyleSheet } from 'react-native';
 import { Picker } from '@react-native-picker/picker'; // Native Picker for dropdown
 import Colors from '../../constant/Colors';
-
+import { useTheme } from '@react-navigation/native';
 const CustomModal = ({ visible, onClose }) => {
+  const { isDarkMode } = useTheme();
+  const Forgot_bg = isDarkMode ? '#000' : '#fff';
+  const Card_bg = isDarkMode ? '#333' : '#fff';
+  const Text_bg = isDarkMode ? '#fff': '#000'
+
+
   const [selectedOrder, setSelectedOrder] = React.useState('');
 
   return (
@@ -16,8 +22,8 @@ const CustomModal = ({ visible, onClose }) => {
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.centeredView}>
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View style={styles.modalView}>
-              <Text style={styles.modalTitle}>Previous Orders</Text>
+            <View style={[styles.modalView,{backgroundColor:Text_bg}]}>
+              <Text style={[styles.modalTitle,{color:Forgot_bg}]}>Previous Orders</Text>
 
               <View style={styles.pickerWrapper}>
                 <Picker

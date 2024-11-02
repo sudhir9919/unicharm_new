@@ -1,25 +1,32 @@
 import React, { useState, useRef } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, TextInput, KeyboardAvoidingView, Platform, Image } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { distributorsData, locationsData, subLocationsData, materialData } from '../../Data/Data';
 import { useNavigation } from '@react-navigation/native';
 import Colors from '../../constant/Colors';
-import InputBox from '../../reusable_component/InputBox';
-import Icon from 'react-native-vector-icons/Feather'
 import CustomModal from '../CustomModal/CustomModal';
 import CustomButton from '../../reusable_component/Button';
-const OrderNow = ({ width }) => {
-  const [modalVisible, setModalVisible] = useState(false)
+import { useTheme } from '../../Context/ThemeContext';
+import ThanksPopup from '../../Screen/ThanksPopup/ThanksPopup'; // Import ThanksPopup
+const OrderNow = () => {
+  const { isDarkMode } = useTheme();
+  const Forgot_bg = isDarkMode ? '#000' : '#fff';
+  const Card_bg = isDarkMode ? '#333' : '#fff';
+  const Text_bg = isDarkMode ? '#fff': '#000'
+  
+  const [modalVisible, setModalVisible] = useState(false);
+  const [thanksVisible, setThanksVisible] = useState(false); // State for ThanksPopup visibility
   const [selectedDistributor, setSelectedDistributor] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
   const [selectedStorage, setSelectedStorage] = useState('');
   const [quantities, setQuantities] = useState({});
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedDistributor2, setSelectedDistributor2] = useState('');
+  const [distributorSearchQuery, setDistributorSearchQuery] = useState('');
+  const [materialSearchQuery, setMaterialSearchQuery] = useState('');
+  const [filteredDistributors, setFilteredDistributors] = useState([]);
+  const [filteredMaterials, setFilteredMaterials] = useState([]);
+  
   const navigation = useNavigation();
-
-  const scrollViewRef = useRef(); // Ref for the ScrollView
-  const materialScrollViewRef = useRef(); // Ref for the Material ScrollView
+  const scrollViewRef = useRef();
 
   const handleAddQuantity = (material) => {
     setQuantities((prev) => ({
@@ -35,94 +42,99 @@ const OrderNow = ({ width }) => {
     }));
   };
 
-  const handleFocus = () => {
-    // Scroll to top when search input is focused
-    scrollViewRef.current.scrollTo({ y: 0, animated: true });
+  const handleDistributorSearch = (query) => {
+    setDistributorSearchQuery(query);
+    const filtered = distributorsData.filter(distributor => 
+      distributor.name.toLowerCase().startsWith(query.toLowerCase()) || 
+      distributor.distributorCode.toLowerCase().startsWith(query.toLowerCase())
+    );
+    setFilteredDistributors(filtered);
+  };
+
+  const handleDistributorSelect = (distributor) => {
+    setSelectedDistributor(distributor.id);
+    setDistributorSearchQuery(distributor.name);
+    setFilteredDistributors([]);
+  };
+
+  const updateMaterials = (storage) => {
+    if (selectedDistributor && storage) {
+      const materials = materialData[selectedDistributor][storage] || [];
+      setFilteredMaterials(materials);
+    } else {
+      setFilteredMaterials([]);
+    }
+  };
+
+  const handleStorageChange = (itemValue) => {
+    setSelectedStorage(itemValue);
+    updateMaterials(itemValue);
+  };
+
+  const handleSubmitOrder = () => {
+    const orderDetails = {
+      distributor: selectedDistributor,
+      materials: Object.entries(quantities).map(([material, quantity]) => ({
+        name: material,
+        quantity,
+      })),
+    };
+    // Show ThanksPopup instead of navigating directly
+    setThanksVisible(true);
   };
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container,{backgroundColor:Forgot_bg}]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
         contentContainerStyle={styles.scrollView}
         ref={scrollViewRef}
       >
-        {/* Header Section */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Add Punch Order</Text>
+          <Text style={[styles.headerTitle,{color:Text_bg}]}>Add Punch Order</Text>
           <TouchableOpacity style={styles.copyButton} onPress={() => setModalVisible(true)}>
             <Text style={styles.copyButtonText}>Copy Order</Text>
-            <Icon name="shopping-bag" size={24}/>
           </TouchableOpacity>
           <CustomModal visible={modalVisible} onClose={() => setModalVisible(false)} />
         </View>
-
+  
         <View style={styles.form}>
-          <InputBox label={'Customer/Distributor Code'} />
-        </View>
-
-        {/* Distributor Section with Two Dropdowns */}
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text style={styles.label}>Select Distributors:</Text>
-          <Text style={styles.label}>Active/Inactive:</Text>
-        </View>
-
-        <View style={styles.rowContainer}>
-          {/* First Distributor Dropdown */}
-          <View style={styles.gradientDistributor1}>
-            <Picker
-              selectedValue={selectedDistributor}
-              onValueChange={(itemValue) => {
-                setSelectedDistributor(itemValue);
-                setSelectedLocation('');
-                setSelectedStorage('');
-              }}
-              style={styles.picker}
-            >
-              <Picker.Item label="Select a Distributor" value="" />
-              {distributorsData.filter(distributor => {
-                if (selectedDistributor2 === "inactive") {
-                  return distributor.name.includes('-01'); // Show only inactive distributors
-                }
-                return !distributor.name.includes('-01'); // Show only active distributors
-              }).map((distributor) => (
-                <Picker.Item key={distributor.id} label={distributor.name} value={distributor.id} />
+          <TextInput
+            style={[styles.input,{color:Text_bg}]}
+            placeholder={'Customer/Distributor Code'}
+            placeholderTextColor={Text_bg}
+            value={distributorSearchQuery}
+            onChangeText={handleDistributorSearch}
+          />
+          {distributorSearchQuery.length > 0 && filteredDistributors.length > 0 && (
+            <ScrollView style={styles.suggestionList}>
+              {filteredDistributors.map(distributor => (
+                <TouchableOpacity
+                  key={distributor.id}
+                  onPress={() => handleDistributorSelect(distributor)}
+                  style={styles.suggestionItem}
+                >
+                  <Text style={{ color: Text_bg }}>{distributor.name} ({distributor.distributorCode})</Text>
+                </TouchableOpacity>
               ))}
-            </Picker>
-          </View>
-
-          {/* Second Distributor Dropdown */}
-          <View style={styles.gradientDistributor2}>
-            <Picker
-              selectedValue={selectedDistributor2}
-              onValueChange={(itemValue) => {
-                setSelectedDistributor2(itemValue);
-                setSelectedDistributor('');
-              }}
-              style={styles.picker}
-            >
-              <Picker.Item label="Status" value="" />
-              <Picker.Item label="Active" value="active" />
-              <Picker.Item label="Inactive" value="inactive" />
-            </Picker>
-          </View>
+            </ScrollView>
+          )}
         </View>
 
-        {/* Location Section */}
-        <Text style={styles.label}>Select Location:</Text>
+        <Text style={[styles.label, { color: Text_bg }]}>Select Plant:</Text>
         <View style={styles.gradient}>
           <Picker
             selectedValue={selectedLocation}
             onValueChange={(itemValue) => {
-              setSelectedLocation(itemValue);
+              setSelectedLocation(itemValue); 
               setSelectedStorage('');
             }}
             style={styles.picker}
             enabled={selectedDistributor !== ''}
           >
-            <Picker.Item label="Select a Location" value="" />
+            <Picker.Item label="Select a Plant" value="" />
             {selectedDistributor
               ? locationsData[selectedDistributor].map((location, index) => (
                   <Picker.Item key={index} label={location} value={location} />
@@ -131,80 +143,81 @@ const OrderNow = ({ width }) => {
           </Picker>
         </View>
 
-        {/* Storage Section */}
-        <Text style={styles.label}>Select Storage Location:</Text>
+        <Text style={[styles.label, { color: Text_bg }]}>Select Storage Location:</Text>
         <View style={styles.gradient}>
           <Picker
             selectedValue={selectedStorage}
-            onValueChange={(itemValue) => setSelectedStorage(itemValue)}
+            onValueChange={handleStorageChange}
             style={styles.picker}
             enabled={selectedLocation !== ''}
           >
             <Picker.Item label="Select a Storage Location" value="" />
             {selectedLocation && selectedDistributor ? (
-              subLocationsData[selectedDistributor] &&
-              subLocationsData[selectedDistributor][selectedLocation]
-                ? subLocationsData[selectedDistributor][selectedLocation].map((subLocation, index) => (
-                    <Picker.Item key={index} label={subLocation} value={subLocation} />
-                  ))
-                : null
+              subLocationsData[selectedDistributor][selectedLocation]?.map((subLocation, index) => (
+                <Picker.Item key={index} label={subLocation} value={subLocation} />
+              ))
             ) : null}
           </Picker>
         </View>
 
-        {/* Materials Section */}
-        <Text style={styles.label}>Materials:</Text>
-        <View style={styles.materialContainer}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search materials..."
-            placeholderTextColor='#000'
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            onFocus={handleFocus} // Call the handleFocus function
+        <Text style={[styles.label, { color: Text_bg }]}>Materials:</Text>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search materials..."
+          placeholderTextColor={Text_bg}
+          value={materialSearchQuery}
+          onChangeText={(query) => {
+            setMaterialSearchQuery(query);
+            if (query) {
+              const filtered = filteredMaterials.filter(material =>
+                material.toLowerCase().startsWith(query.toLowerCase())
+              );
+              setFilteredMaterials(filtered);
+            } else {
+              updateMaterials(selectedStorage);
+            }
+          }}
+        />
+        <ScrollView
+          style={styles.materialList}
+          nestedScrollEnabled={true}
+        >
+          {filteredMaterials.map((material, index) => (
+            <View key={index} style={styles.materialRow}>
+              <Text style={[styles.materialText, { color: Text_bg }]}>{material}</Text>
+              <View style={styles.quantityContainer}>
+                <TouchableOpacity onPress={() => handleSubtractQuantity(material)} style={styles.quantityButton}>
+                  <Text style={styles.quantityButtonText}>-</Text>
+                </TouchableOpacity>
+                <TextInput
+                  style={styles.customInput}
+                  value={`${quantities[material] || 0}`} 
+                  keyboardType="numeric"
+                  onChangeText={(text) => {
+                    const quantity = parseInt(text) || 0;
+                    setQuantities((prev) => ({
+                      ...prev,
+                      [material]: quantity,
+                    }));
+                  }}
+                />
+                <TouchableOpacity onPress={() => handleAddQuantity(material)} style={styles.quantityButton}>
+                  <Text style={styles.quantityButtonText}>+</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))}
+        </ScrollView>
+
+        <View style={{ alignItems: 'center', marginTop: 20 }}>
+          <CustomButton
+            title="Submit Order"
+            onPress={handleSubmitOrder}
           />
-          <ScrollView
-            style={styles.materialList}
-            ref={materialScrollViewRef} // Ref for materials scroll
-            nestedScrollEnabled={true} // Enable nested scrolling
-          >
-            {selectedStorage && selectedDistributor ? (
-              materialData[selectedDistributor] && materialData[selectedDistributor][selectedStorage]
-                ? materialData[selectedDistributor][selectedStorage]
-                    .filter(material => material.toLowerCase().includes(searchQuery.toLowerCase()))
-                    .map((material, index) => (
-                      <View key={index} style={styles.materialRow}>
-                        <Text style={styles.materialText}>{material}</Text>
-                        <View style={styles.quantityContainer}>
-                          <TouchableOpacity onPress={() => handleSubtractQuantity(material)} style={styles.quantityButton}>
-                            <Text style={styles.quantityButtonText}>-</Text>
-                          </TouchableOpacity>
-                          <TextInput
-                            style={styles.customQuantityInput}
-                            value={`${quantities[material] || 0}`}
-                            keyboardType="numeric"
-                            onChangeText={(text) => {
-                              const quantity = parseInt(text) || 0;
-                              setQuantities((prev) => ({
-                                ...prev,
-                                [material]: quantity,
-                              }));
-                            }}
-                          />
-                          <TouchableOpacity onPress={() => handleAddQuantity(material)} style={styles.quantityButton}>
-                            <Text style={styles.quantityButtonText}>+</Text>
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                    ))
-                : <Text style={styles.noMaterialsText}>No materials available for this storage location.</Text>
-            ) : (
-              <Text style={styles.noMaterialsText}>Select a storage location to see materials.</Text>
-            )}
-          </ScrollView>
         </View>
-        <CustomButton style={styles.button} title='Place Order' />
       </ScrollView>
+
+      <ThanksPopup visible={thanksVisible} onClose={() => setThanksVisible(false)} />
     </KeyboardAvoidingView>
   );
 };
@@ -212,105 +225,94 @@ const OrderNow = ({ width }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.bg_color,
+    padding: 20,
+    backgroundColor: 'white',
   },
   scrollView: {
-    paddingHorizontal: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 20,
-    textAlign: 'center',
+    flexGrow: 1,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 6,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#333',
   },
   copyButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    height: 40,
+    width: 120,
     backgroundColor: Colors.Button_color,
-    padding: 7,
-    borderRadius: 7,
-    gap:7
+    borderRadius: 5,
+    paddingHorizontal: 10,
   },
   copyButtonText: {
-    color: 'white',
-    marginLeft: 5,
+    marginRight: 5,
+    color: Colors.white,
   },
-  copyIcon: {
-    width: 20,
-    height: 20,
+  form: {
+    marginVertical: 20,
   },
-  label: {
-    marginBottom: 10,
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  picker: {
+  input: {
     height: 50,
-    width: '100%',
-    backgroundColor: 'transparent',
-    color: '#fff',
-  },
-  gradient: {
-    borderRadius: 8,
-    marginBottom: 15,
-    backgroundColor: Colors.Button_color,
-  },
-  gradientDistributor1: {
-    borderRadius: 8,
-    marginBottom: 15,
-    elevation: 5,
-    width: '60%',
-    backgroundColor: Colors.Button_color,
-  },
-  gradientDistributor2: {
-    borderRadius: 8,
-    marginBottom: 15,
-    elevation: 5,
-    width: '35%',
-    backgroundColor: Colors.Button_color,
-  },
-  materialContainer: {
-    marginTop: 15,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 10,
-    maxHeight: 250,
-  },
-  searchInput: {
-    height: 40,
-    borderColor: '#000',
+    borderColor: 'gray',
     borderWidth: 1,
     borderRadius: 5,
     paddingHorizontal: 10,
     marginBottom: 10,
     color: 'black',
   },
+  suggestionList: {
+    borderWidth: 1,
+    borderColor: 'gray',
+    borderRadius: 5,
+    maxHeight: 150,
+  },
+  suggestionItem: {
+    padding: 10,
+    borderBottomColor: 'gray',
+    borderBottomWidth: 1,
+  },
+  label: {
+    marginVertical: 10,
+    fontSize: 16,
+  },
+  picker: {
+    height: 50,
+    backgroundColor: Colors.Button_color,
+  },
+  gradient: {
+    borderWidth: 1,
+    borderColor: 'gray',
+    borderRadius: 5,
+  },
+  searchInput: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+  },
   materialList: {
-    flexGrow: 1,
+    maxHeight: 200,
   },
   materialRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    padding: 10,
+    borderBottomColor: 'gray',
+    borderBottomWidth: 1,
   },
   materialText: {
     fontSize: 16,
-    color: '#333',
+    flex: 1,
+    color: 'black',
   },
   quantityContainer: {
     flexDirection: 'row',
@@ -318,42 +320,22 @@ const styles = StyleSheet.create({
   },
   quantityButton: {
     backgroundColor: Colors.Button_color,
-    padding: 5,
     borderRadius: 5,
-    marginHorizontal: 5,
+    padding: 10,
   },
   quantityButtonText: {
     color: 'white',
-    fontSize: 18,
-    width: 30,
-    height: 20,
   },
-  customQuantityInput: {
-    height: 36,
-    width: 65,
-    borderColor: '#ccc',
+  customInput: {
+    width: 50,
+    height: 40,
+    borderColor: 'gray',
     borderWidth: 1,
     borderRadius: 5,
     textAlign: 'center',
-    fontSize: 15,
-    color: 'black',
+    marginHorizontal: 5,
+    color: Colors.Text_color,
   },
-  noMaterialsText: {
-    textAlign: 'center',
-    color: '#888',
-  },
-  rowContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  form: {
-    marginBottom: 30,
-  },
-  button:{
-    marginLeft:'8%',
-    marginStart:'10%'
-  }
 });
 
-export default OrderNow
+export default OrderNow;

@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import { View, TextInput, StyleSheet, Text } from 'react-native';
 
-const InputBox = ({ label, style, placeholder, secureTextEntry }) => {
+const InputBox = ({ 
+  label, 
+  style, 
+  placeholder, 
+  secureTextEntry, 
+  labelBackgroundColor ,// New prop for label background color
+  labelColor
+}) => {
   const [isFocused, setIsFocused] = useState(false);
   const [textColor, setTextColor] = useState('#B0B0B0'); // Default placeholder color
   const [inputValue, setInputValue] = useState(''); // State for the input value
@@ -21,8 +28,8 @@ const InputBox = ({ label, style, placeholder, secureTextEntry }) => {
   return (
     <View style={[styles.container, style]}>
       <View style={[styles.inputContainer, isFocused && styles.focusedInput]}>
-        <View style={styles.labelContainer}>
-          <Text style={[styles.label, isFocused && styles.focusedLabel]}>{label}</Text>
+        <View style={[styles.labelContainer, { backgroundColor: labelBackgroundColor || '#fff' }]}>
+          <Text style={[styles.label,{color:labelColor} ,isFocused && styles.focusedLabel]}>{label}</Text>
         </View>
         <TextInput
           style={[styles.input, { color: textColor }]} // Set text color dynamically
@@ -50,8 +57,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     paddingHorizontal: 10,
     paddingTop: 10,
-    width:300
-    // You can also set a default width here if needed
+    width: 300 // Default width
   },
   focusedInput: {
     borderColor: '#3C459A',
@@ -60,7 +66,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -10,
     left: 20,
-    backgroundColor: '#fff',
     paddingHorizontal: 5,
     zIndex: 1,
   },

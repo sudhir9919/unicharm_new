@@ -5,29 +5,33 @@ import InputBox from '../../reusable_component/InputBox';
 import CustomButton from '../../reusable_component/Button';
 import InputBox2 from '../../reusable_component/InputBox2';
 import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../../Context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
 const LoginScreen = () => {
+    const { isDarkMode } = useTheme();
+    const backgroundColor = isDarkMode ? 'black' : '#fff';
+    const textColor = isDarkMode ? Colors.white : Colors.Text_color;
     const navigation = useNavigation(); // Move this inside the component
-
+   
     return (
-        <View style={styles.container}>
+        <View style={[styles.container,{backgroundColor:backgroundColor}]}>
             <Image
                 source={require('../../assets/Images/unicharm-logo.png')}
                 style={styles.banner}
                 resizeMode="contain"
             />
             <View style={styles.formContainer}>
-                <Text style={styles.loginText}>Login</Text>
-                <InputBox style={styles.inputBoxStyle} label="User Id/Employee" placeholder="Enter Email" />
+                <Text style={[styles.loginText,{color:textColor}]}>Login</Text>
+                <InputBox style={styles.inputBoxStyle} label="User Id/Employee" placeholder="Enter Email" labelBackgroundColor={isDarkMode?Colors.Text_color:Colors.white} labelColor={isDarkMode?Colors.white:Colors.Text_color}/>
                 <InputBox2 label="Password" placeholder="Enter Password" style={{ marginBottom: 10 }} />
                 <View style={styles.forgotPasswordText}>
                     <TouchableOpacity>
-                        <Text style={{ color: Colors.Text_color }} >Sign Up</Text>
+                        <Text style={[{color:textColor}]} >Sign Up</Text>
                     </TouchableOpacity>
                     <TouchableOpacity>
-                        <Text style={{ color: Colors.Text_color }} onPress={() => {
+                        <Text style={[{color:textColor}]} onPress={() => {
                     navigation.navigate('ForgotPassword'); // Now this works correctly
                 }}>Forgot Password?</Text>
                     </TouchableOpacity>
@@ -36,7 +40,8 @@ const LoginScreen = () => {
                     navigation.navigate('AppTabs'); // Now this works correctly
                 }} />
             </View>
-            <Text style={styles.termsText}>By continuing, you agree to our Terms & Conditions and Privacy Policy</Text>
+            <Text style={[styles.termsText,{color:textColor}]}>By continuing, you agree to our </Text>
+            <Text style={styles.termsText}>Terms & Conditions and Privacy Policy</Text>
         </View>
     );
 };

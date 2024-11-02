@@ -1,55 +1,43 @@
 import React, { useState } from 'react';
-import { View, Text, Image, TextInput, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, Image, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useTheme } from '../../Context/ThemeContext';
 
-const DashboardScreen = ({navigation}) => {
+const DashboardScreen = ({ navigation }) => {
+  const { isDarkMode } = useTheme();
+  const backgroundColor = isDarkMode ? 'black' : 'white';
+  const textColor = isDarkMode ? 'white' : 'black';
+  const iconColor = isDarkMode ? 'white' : 'black'; // Set icon color based on theme
+
   const [date, setDate] = useState(new Date());
   const [show, setShow] = useState(false);
   const [isFocused, setIsFocused] = useState(false); // State to manage focus
 
-  const onChange = (event, selectedDate,) => {
+  const onChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
     setShow(false);
     setDate(currentDate);
   };
 
-  // Functions to handle icon presses
-  const handleNotificationPress = () => {
-    Alert.alert("Notifications clicked");
-  };
-
-  const handleSettingsPress = () => {
-    Alert.alert("Settings clicked");
-  };
-
-  const handleLogoutPress = () => {
-    Alert.alert("Logout clicked");
-  };
-
-  // Function to handle Orders div press
-  const handleOrdersPress = () => {
-    // Alert.alert("500 Orders clicked");
-  };
-
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor }]}>
+      <View style={[styles.header, { backgroundColor }]}>
         <Image 
           source={require('../../assets/Images/unicharm-logo.png')} // Replace with your logo URL
           style={styles.logo}
         />
         <View style={styles.iconContainer}>
-          <TouchableOpacity onPress={handleNotificationPress}>
-            <Icon name="notifications-outline" size={24} color="#000" onPress={() => {
-                    navigation.navigate('NotificationScreen'); // Now this works correctly
-                }}/>
+          <TouchableOpacity>
+            <Icon name="notifications-outline" size={24} color={iconColor} onPress={() => {
+              navigation.navigate('NotificationScreen'); // Now this works correctly
+            }} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleSettingsPress} style={styles.icon}>
-            <Icon name="settings-outline" size={24} color="#000" />
+          <TouchableOpacity style={styles.icon}>
+            <Icon name="settings-outline" size={24} color={iconColor} onPress={() => { navigation.navigate('SettingsScreen') }} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleLogoutPress} style={styles.icon}>
-            <Icon name="log-out-outline" size={24} color="#000" />
+          <TouchableOpacity style={styles.icon}>
+            <Icon name="log-out-outline" size={24} color={iconColor} />
           </TouchableOpacity>
         </View>
       </View>
@@ -59,29 +47,28 @@ const DashboardScreen = ({navigation}) => {
         </View>
         <View style={[styles.dateInputContainer, isFocused && styles.focusedInput]}>
           <TextInput
-            style={styles.dateInput}
+            style={[styles.dateInput, { color: textColor }]}
             placeholder="Choose Date"
             placeholderTextColor="#999"
-            value={date.toLocaleDateString()} // Format the date as needed
-            editable={false} // Make the input non-editable
+            value={date.toLocaleDateString()}
+            editable={false}
             onFocus={() => {
               setShow(true);
-              setIsFocused(true); // Set focus state to true
+              setIsFocused(true);
             }}
-            onBlur={() => setIsFocused(false)} // Reset focus state on blur
+            onBlur={() => setIsFocused(false)}
           />
           <TouchableOpacity onPress={() => {
             setShow(true);
-            setIsFocused(true); // Keep the focus state true when clicking the icon
+            setIsFocused(true);
           }}>
             <Icon name="calendar-outline" size={24} color="#999" style={styles.calendarIcon} />
           </TouchableOpacity>
         </View>
       </View>
-      {/* Touchable Orders Div */}
-      <TouchableOpacity onPress={handleOrdersPress} style={styles.ordersDiv}>
+      <TouchableOpacity style={styles.ordersDiv}>
         <Image 
-          source={require('../../assets/Images/punch-order-icon.png')} // Replace with your small image URL
+          source={require('../../assets/Images/punch-order-icon.png')} 
           style={styles.smallIcon}
         />
         <Text style={styles.ordersText}>500 Orders</Text>
@@ -162,7 +149,6 @@ const styles = StyleSheet.create({
   calendarIcon: {
     marginLeft: 10,
   },
-  // Styles for the new Orders div
   ordersDiv: {
     width: '30%', // Double the width of the "All" div
     height: 75,
@@ -197,6 +183,7 @@ const styles = StyleSheet.create({
   content: {
     padding: 20,
     fontSize: 18,
+    color: 'gray',
   },
 });
 
